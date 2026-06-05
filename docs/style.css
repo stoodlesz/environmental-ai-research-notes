@@ -42,6 +42,31 @@ a {
   margin: 0 auto;
 }
 
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 0;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  color: var(--soft-ink);
+  font-size: 0.94rem;
+}
+
+.site-nav a {
+  text-decoration: none;
+}
+
+.site-nav a:hover {
+  color: var(--moss);
+  text-decoration: underline;
+}
+
 .hero {
   min-height: 72vh;
   display: flex;
@@ -99,6 +124,10 @@ a {
   padding: 36px 0 72px;
 }
 
+.page-list {
+  padding-top: 48px;
+}
+
 .section-title {
   display: grid;
   gap: 4px;
@@ -137,10 +166,6 @@ a {
   max-width: 720px;
   margin: 0;
   color: var(--soft-ink);
-}
-
-.site-header {
-  padding: 22px 0;
 }
 
 .brand {
@@ -188,6 +213,11 @@ a {
 }
 
 @media (max-width: 720px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .hero {
     min-height: 74vh;
     padding: 36px 24px 42px;

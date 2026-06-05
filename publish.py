@@ -17,17 +17,27 @@ import argparse
 import datetime as dt
 import html
 import re
+import shutil
 import textwrap
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
 ARTICLES_DIR = ROOT / "articles"
+PAGES_DIR = ROOT / "pages"
 PUBLIC_DIR = ROOT / "public"
+DOCS_DIR = ROOT / "docs"
 
 
 SITE_TITLE = "Research Notes"
 SITE_DESCRIPTION = "Curious by nature. Building with purpose. Learning always."
+
+NAV_ITEMS = [
+    ("Home", "index.html"),
+    ("Articles", "articles.html"),
+    ("About", "about.html"),
+    ("Project", "project.html"),
+]
 
 
 def slugify(title: str) -> str:
@@ -130,6 +140,25 @@ def markdown_to_html(markdown: str) -> str:
     return "\n".join(blocks)
 
 
+def remove_leading_title(markdown: str) -> str:
+    lines = markdown.lstrip().splitlines()
+    if lines and lines[0].startswith("# "):
+        return "\n".join(lines[1:]).lstrip()
+    return markdown
+
+
+def nav_html() -> str:
+    links = "\n".join(
+        f'      <a href="{href}">{html.escape(label)}</a>' for label, href in NAV_ITEMS
+    )
+    return f"""<header class="site-header">
+    <a class="brand" href="index.html">{html.escape(SITE_TITLE)}</a>
+    <nav class="site-nav" aria-label="Primary navigation">
+{links}
+    </nav>
+  </header>"""
+
+
 def article_template(title: str, date: str, summary: str, body_html: str) -> str:
     return f"""<!doctype html>
 <html lang="en">
@@ -141,9 +170,7 @@ def article_template(title: str, date: str, summary: str, body_html: str) -> str
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="index.html">{html.escape(SITE_TITLE)}</a>
-  </header>
+  {nav_html()}
   <main class="article">
     <p class="date">{html.escape(date)}</p>
     <h1>{html.escape(title)}</h1>
@@ -151,6 +178,67 @@ def article_template(title: str, date: str, summary: str, body_html: str) -> str
     <div class="article-body">
       {body_html}
     </div>
+  </main>
+</body>
+</html>
+"""
+
+
+def page_template(title: str, summary: str, body_html: str) -> str:
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(title)} | {html.escape(SITE_TITLE)}</title>
+  <meta name="description" content="{html.escape(summary)}">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  {nav_html()}
+  <main class="article">
+    <p class="kicker">Page</p>
+    <h1>{html.escape(title)}</h1>
+    <p class="summary">{html.escape(summary)}</p>
+    <div class="article-body">
+      {body_html}
+    </div>
+  </main>
+</body>
+</html>
+"""
+
+
+def articles_template(articles: list[dict[str, str]]) -> str:
+    article_cards = "\n".join(
+        f"""<article class="post">
+      <p class="date">{html.escape(article["date"])}</p>
+      <h2><a href="{html.escape(article["slug"])}.html">{html.escape(article["title"])}</a></h2>
+      <p>{html.escape(article["summary"])}</p>
+    </article>"""
+        for article in articles
+    )
+
+    if not article_cards:
+        article_cards = '<p class="empty">No articles yet.</p>'
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Articles | {html.escape(SITE_TITLE)}</title>
+  <meta name="description" content="All published research notes and articles.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  {nav_html()}
+  <main class="posts page-list">
+    <div class="section-title">
+      <p class="kicker">Archive</p>
+      <h1>Articles</h1>
+    </div>
+    {article_cards}
   </main>
 </body>
 </html>
@@ -180,6 +268,7 @@ def index_template(articles: list[dict[str, str]]) -> str:
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  {nav_html()}
   <header class="hero">
     <div class="hero-copy">
       <p class="kicker">Open research archive</p>
@@ -244,6 +333,31 @@ a {
   margin: 0 auto;
 }
 
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 0;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  color: var(--soft-ink);
+  font-size: 0.94rem;
+}
+
+.site-nav a {
+  text-decoration: none;
+}
+
+.site-nav a:hover {
+  color: var(--moss);
+  text-decoration: underline;
+}
+
 .hero {
   min-height: 72vh;
   display: flex;
@@ -301,6 +415,10 @@ a {
   padding: 36px 0 72px;
 }
 
+.page-list {
+  padding-top: 48px;
+}
+
 .section-title {
   display: grid;
   gap: 4px;
@@ -339,10 +457,6 @@ a {
   max-width: 720px;
   margin: 0;
   color: var(--soft-ink);
-}
-
-.site-header {
-  padding: 22px 0;
 }
 
 .brand {
@@ -390,6 +504,11 @@ a {
 }
 
 @media (max-width: 720px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .hero {
     min-height: 74vh;
     padding: 36px 24px 42px;
@@ -432,11 +551,41 @@ def read_articles() -> list[dict[str, str]]:
     return sorted(articles, key=lambda item: item["date"], reverse=True)
 
 
+def read_pages() -> list[dict[str, str]]:
+    pages = []
+    for path in sorted(PAGES_DIR.glob("*.md")):
+        markdown = path.read_text(encoding="utf-8")
+        meta, body = parse_frontmatter(markdown)
+        title = meta.get("title", path.stem.replace("-", " ").title())
+        summary = meta.get("summary", "")
+        slug = meta.get("slug", path.stem)
+        pages.append(
+            {
+                "path": str(path),
+                "slug": slug,
+                "title": title,
+                "summary": summary,
+                "body": body,
+            }
+        )
+    return pages
+
+
+def sync_docs() -> None:
+    DOCS_DIR.mkdir(exist_ok=True)
+    for path in PUBLIC_DIR.glob("*.html"):
+        shutil.copy2(path, DOCS_DIR / path.name)
+    shutil.copy2(PUBLIC_DIR / "style.css", DOCS_DIR / "style.css")
+    assets_dir = PUBLIC_DIR / "assets"
+    if assets_dir.exists():
+        shutil.copytree(assets_dir, DOCS_DIR / "assets", dirs_exist_ok=True)
+
+
 def build_site() -> None:
     PUBLIC_DIR.mkdir(exist_ok=True)
     articles = read_articles()
     for article in articles:
-        body_html = markdown_to_html(article["body"])
+        body_html = markdown_to_html(remove_leading_title(article["body"]))
         output = article_template(
             article["title"],
             article["date"],
@@ -445,8 +594,15 @@ def build_site() -> None:
         )
         (PUBLIC_DIR / f"{article['slug']}.html").write_text(output, encoding="utf-8")
 
+    for page in read_pages():
+        body_html = markdown_to_html(remove_leading_title(page["body"]))
+        output = page_template(page["title"], page["summary"], body_html)
+        (PUBLIC_DIR / f"{page['slug']}.html").write_text(output, encoding="utf-8")
+
     (PUBLIC_DIR / "index.html").write_text(index_template(articles), encoding="utf-8")
+    (PUBLIC_DIR / "articles.html").write_text(articles_template(articles), encoding="utf-8")
     (PUBLIC_DIR / "style.css").write_text(stylesheet(), encoding="utf-8")
+    sync_docs()
 
 
 def publish_article(
@@ -492,6 +648,30 @@ Write your article here. You can use:
     return publish_article(title, body, summary=summary)
 
 
+def new_page(title: str, summary: str = "") -> Path:
+    PAGES_DIR.mkdir(exist_ok=True)
+    slug = slugify(title)
+    path = PAGES_DIR / f"{slug}.md"
+    body = f"""# {title}
+
+Write this page here.
+"""
+    markdown = textwrap.dedent(
+        f"""\
+        ---
+        title: "{title}"
+        summary: "{summary}"
+        slug: {slug}
+        ---
+
+        {body.strip()}
+        """
+    )
+    path.write_text(markdown, encoding="utf-8")
+    build_site()
+    return path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Publish Markdown articles as a static site.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -499,6 +679,10 @@ def main() -> None:
     new_parser = subparsers.add_parser("new", help="Create a draft article and rebuild the site.")
     new_parser.add_argument("title")
     new_parser.add_argument("--summary", default="")
+
+    page_parser = subparsers.add_parser("page", help="Create a standalone page and rebuild the site.")
+    page_parser.add_argument("title")
+    page_parser.add_argument("--summary", default="")
 
     build_parser = subparsers.add_parser("build", help="Rebuild public/ from articles/.")
     build_parser.set_defaults(command="build")
@@ -508,9 +692,14 @@ def main() -> None:
         path = new_article(args.title, args.summary)
         print(f"Created {path}")
         print(f"Preview: {PUBLIC_DIR / 'index.html'}")
+    elif args.command == "page":
+        path = new_page(args.title, args.summary)
+        print(f"Created {path}")
+        print(f"Preview: {PUBLIC_DIR / 'index.html'}")
     elif args.command == "build":
         build_site()
         print(f"Built {PUBLIC_DIR}")
+        print(f"Synced {DOCS_DIR}")
 
 
 if __name__ == "__main__":

@@ -33,6 +33,48 @@ python publish.py build
 
 Your finished website appears in `public/`.
 
+The generated GitHub Pages version appears in `docs/`.
+
+## Add Pages And Navigation
+
+The site now has navigation for:
+
+```text
+Home
+Articles
+About
+Project
+```
+
+Create a new standalone page:
+
+```bash
+python publish.py page "Reading List" --summary "Papers, datasets, and useful references."
+```
+
+That creates a Markdown file in `pages/`. Edit it, then rebuild:
+
+```bash
+python publish.py build
+```
+
+To add a new link to the top navigation, edit `NAV_ITEMS` near the top of `publish.py`:
+
+```python
+NAV_ITEMS = [
+    ("Home", "index.html"),
+    ("Articles", "articles.html"),
+    ("About", "about.html"),
+    ("Project", "project.html"),
+]
+```
+
+Then rebuild:
+
+```bash
+python publish.py build
+```
+
 ## Publish From Jupyter
 
 Put this in a notebook cell from the `article-publisher` folder:
@@ -72,7 +114,8 @@ After that, your everyday workflow is:
 
 ```bash
 python publish.py new "My Next Article" --summary "One-line summary."
-git add articles public
+python publish.py build
+git add articles pages public docs publish.py README.md
 git commit -m "Publish article"
 git push
 ```
@@ -89,7 +132,7 @@ Edit these constants near the top of `publish.py`:
 
 ```python
 SITE_TITLE = "Research Notes"
-SITE_DESCRIPTION = "Articles, research notes, and working papers."
+SITE_DESCRIPTION = "Curious by nature. Building with purpose. Learning always."
 ```
 
 Edit `stylesheet()` in `publish.py` to change the visual style.
