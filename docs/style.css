@@ -228,6 +228,22 @@ a {
   font-size: 0.95em;
 }
 
+.page-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 42px;
+}
+
+.page-action a {
+  color: var(--moss);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.page-action a:hover {
+  text-decoration: underline;
+}
+
 .empty {
   color: var(--leaf);
 }

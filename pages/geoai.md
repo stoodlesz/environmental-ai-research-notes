@@ -30,3 +30,5 @@ The guiding principle is simple: use AI with care, ethics, and a moral compass. 
 The same approach could eventually be extended to wetlands, reforestation monitoring, and other ecosystem restoration contexts.
 
 The aim is not just to build a model, but to understand what environmental AI systems can reliably detect, where they fail, and how to make them more trustworthy.
+
+=> [See all projects](project.html)

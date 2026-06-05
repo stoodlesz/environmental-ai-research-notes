@@ -135,6 +135,12 @@ def markdown_to_html(markdown: str) -> str:
             list_items.append(line[2:])
             continue
 
+        if line.startswith("=> "):
+            flush_paragraph()
+            flush_list()
+            blocks.append(f'<p class="page-action">{inline_markdown(line[3:])}</p>')
+            continue
+
         paragraph.append(line)
 
     flush_paragraph()
@@ -529,6 +535,22 @@ a {
 
 .article-body code {
   font-size: 0.95em;
+}
+
+.page-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 42px;
+}
+
+.page-action a {
+  color: var(--moss);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.page-action a:hover {
+  text-decoration: underline;
 }
 
 .empty {
