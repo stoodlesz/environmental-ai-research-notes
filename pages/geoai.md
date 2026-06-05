@@ -31,4 +31,12 @@ The same approach could eventually be extended to wetlands, reforestation monito
 
 The aim is not just to build a model, but to understand what environmental AI systems can reliably detect, where they fail, and how to make them more trustworthy.
 
+## Repository
+
+The project repository is available here:
+
+[stoodlesz/dune-ai-monitoring](https://github.com/stoodlesz/dune-ai-monitoring)
+
+The repo includes early work on dataset manifests, provenance and integrity metadata, Sentinel-2 imagery, Microsoft Planetary Computer helpers, NDVI and NDWI calculations, image tiling, psammosere labels, and secure ML pipeline planning.
+
 => [See all projects](project.html)
