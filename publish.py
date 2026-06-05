@@ -170,7 +170,30 @@ def nav_html() -> str:
   </header>"""
 
 
-def article_template(title: str, date: str, summary: str, body_html: str) -> str:
+def article_nav_html(
+    previous_article: dict[str, str] | None,
+    next_article: dict[str, str] | None,
+) -> str:
+    links = ['<a href="articles.html">See all articles</a>']
+    if previous_article:
+        links.append(
+            f'<a href="{html.escape(previous_article["slug"])}.html">See previous article</a>'
+        )
+    if next_article:
+        links.append(
+            f'<a href="{html.escape(next_article["slug"])}.html">See next article</a>'
+        )
+    return "\n".join(links)
+
+
+def article_template(
+    title: str,
+    date: str,
+    summary: str,
+    body_html: str,
+    previous_article: dict[str, str] | None = None,
+    next_article: dict[str, str] | None = None,
+) -> str:
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -189,6 +212,9 @@ def article_template(title: str, date: str, summary: str, body_html: str) -> str
     <div class="article-body">
       {body_html}
     </div>
+    <nav class="article-links" aria-label="Article navigation">
+      {article_nav_html(previous_article, next_article)}
+    </nav>
   </main>
 </body>
 </html>
@@ -553,6 +579,26 @@ a {
   text-decoration: underline;
 }
 
+.article-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  justify-content: flex-end;
+  margin-top: 54px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.article-links a {
+  color: var(--moss);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.article-links a:hover {
+  text-decoration: underline;
+}
+
 .empty {
   color: var(--leaf);
 }
@@ -651,13 +697,17 @@ def build_site() -> None:
     for path in PUBLIC_DIR.glob("*.html"):
         path.unlink()
     articles = read_articles()
-    for article in articles:
+    for index, article in enumerate(articles):
         body_html = markdown_to_html(remove_leading_title(article["body"]))
+        previous_article = articles[index + 1] if index + 1 < len(articles) else None
+        next_article = articles[index - 1] if index > 0 else None
         output = article_template(
             article["title"],
             article["date"],
             article["summary"],
             body_html,
+            previous_article,
+            next_article,
         )
         (PUBLIC_DIR / f"{article['slug']}.html").write_text(output, encoding="utf-8")
 

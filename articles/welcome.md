@@ -1,11 +1,11 @@
 ---
-title: "Environmental AI, Dune Systems, and Secure Machine Learning"
+title: "Environmental AI, dune systems, and secure machine learning"
 date: 2026-06-05
 summary: "A first note on exploring coastal dune ecosystems through satellite imagery, computer vision, and secure machine learning."
 slug: welcome
 ---
 
-# Environmental AI, Dune Systems, and Secure Machine Learning
+# Environmental AI, dune systems, and secure machine learning
 
 Welcome to my research notes.
 

@@ -1,11 +1,11 @@
 ---
-title: "What My Thesis Found About Adversarial Attacks on Biometric Authentication"
+title: "What my thesis found about adversarial attacks on biometric authentication"
 date: 2026-06-05
 summary: "A plain-language summary of my MSc thesis results on adversarial attacks, facial embeddings, authentication thresholds, and lightweight defensive controls."
 slug: thesis-results-biometric-security
 ---
 
-# What My Thesis Found About Adversarial Attacks on Biometric Authentication
+# What my thesis found about adversarial attacks on biometric authentication
 
 My MSc dissertation explored adversarial attacks on AI-based biometric authentication systems, focusing on facial recognition systems that use embedding-based verification.
 
