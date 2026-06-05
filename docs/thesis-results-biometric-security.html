@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What My Thesis Found About Adversarial Attacks on Biometric Authentication | Research Notes</title>
+  <meta name="description" content="A plain-language summary of my MSc thesis results on adversarial attacks, facial embeddings, authentication thresholds, and lightweight defensive controls.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Research Notes</a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="index.html">Home</a>
+      <a href="articles.html">Articles</a>
+      <a href="about.html">About</a>
+      <a href="project.html">Project</a>
+    </nav>
+  </header>
+  <main class="article">
+    <p class="date">2026-06-05</p>
+    <h1>What My Thesis Found About Adversarial Attacks on Biometric Authentication</h1>
+    <p class="summary">A plain-language summary of my MSc thesis results on adversarial attacks, facial embeddings, authentication thresholds, and lightweight defensive controls.</p>
+    <div class="article-body">
+      <p>My MSc dissertation explored adversarial attacks on AI-based biometric authentication systems, focusing on facial recognition systems that use embedding-based verification.</p>
+<p>The central idea was simple: in biometric authentication, the important question is not only whether a model misclassifies an image. The security question is whether an attacker can move a face representation close enough to another identity that the system accepts it.</p>
+<p>That means the key metric is authentication boundary crossing.</p>
+<p>In this project, I evaluated attacks using cosine similarity thresholds, rather than treating the task as a normal image classification problem. This mattered because biometric systems often work by comparing two embeddings and granting access if the similarity score exceeds a predefined threshold.</p>
+<h2>Research questions</h2>
+<p>The thesis focused on four questions:</p>
+<ul><li>How vulnerable are embedding-based facial authentication systems to targeted adversarial attacks?</li><li>Do lightweight defences meaningfully reduce authentication compromise?</li><li>How do pixel-space and latent-space attacks differ in impact and feasibility?</li><li>How can biometric authentication be more securely deployed in resource-constrained environments?</li></ul>
+<h2>Experimental setup</h2>
+<p>The experiments used a pretrained FaceNet-style embedding model, with LFW and CASIA-WebFace used as facial datasets. The authentication decision was based on cosine similarity, with fixed thresholds around 0.80 and 0.85.</p>
+<p>I tested two main attack routes:</p>
+<ul><li>pixel-space adversarial attacks, including targeted PGD</li><li>latent-space optimisation using StyleGAN2-ADA</li></ul>
+<p>The experiments were deliberately constrained. They were run in a CPU-only environment, which made runtime and feasibility part of the research question rather than just an inconvenience.</p>
+<h2>Result 1: pixel-space attacks shifted embeddings, but rarely caused impersonation</h2>
+<p>Pixel-space attacks increased similarity between the source and target identities, but they rarely crossed the authentication threshold.</p>
+<p>The baseline source-to-target cosine similarity was usually around 0.20 to 0.40. After adversarial optimisation, the adversarial-to-target cosine similarity rose to roughly 0.55 to 0.75.</p>
+<p>That is a meaningful movement in embedding space. The attack was doing something real.</p>
+<p>But with an authentication threshold of 0.80, false acceptance remained rare.</p>
+<p>This suggests that pixel-space attacks can distort embeddings and push identities closer together, but under the tested constraints they were not usually enough to produce a full biometric impersonation.</p>
+<h2>Result 2: full latent inversion was powerful, but expensive</h2>
+<p>The full latent-space attack used inversion plus targeted optimisation. This was much more effective.</p>
+<p>In the inversion-based latent attack, the final cosine similarity reached 0.9809 and crossed the authentication threshold. That is similarity comparable to a genuine identity match.</p>
+<p>The cost was compute time:</p>
+<ul><li>inversion runtime: 35 hours</li><li>optimisation runtime: 43 hours</li><li>total runtime: around 78 hours</li><li>final cosine similarity: 0.9809</li><li>threshold crossed: yes</li></ul>
+<p>This result is important because it shows that identity-level convergence is possible, but it also shows that the most powerful version of the attack was not cheap or fast.</p>
+<h2>Result 3: the reduced-compute latent variant was the most interesting security result</h2>
+<p>The reduced-compute latent variant removed the reconstruction stage and used direct latent optimisation.</p>
+<p>This made the attack much more feasible while still producing authentication-relevant similarity.</p>
+<p>Across five runs, the reduced-compute variant achieved:</p>
+<ul><li>success rate: 100 percent</li><li>mean cosine similarity: 0.8626</li><li>mean runtime: 105.97 minutes</li><li>non-target cosine similarity: -0.1121</li></ul>
+<p>This was the most interesting result from a security perspective.</p>
+<p>The full pipeline reached higher similarity, but it took around 78 hours. The reduced-compute variant reached a mean cosine above the tested authentication threshold in under two hours on average.</p>
+<p>That makes the risk feel more operationally realistic.</p>
+<h2>Result 4: attack capability was graded, not binary</h2>
+<p>One of the main conclusions was that adversarial capability should not be treated as a yes-or-no property.</p>
+<p>The results formed a graded capability pattern:</p>
+<ul><li>pixel-space attacks were fast and repeatable, but usually stayed below the authentication threshold</li><li>reduced-compute latent optimisation was slower, but crossed the threshold more realistically</li><li>the full latent pipeline achieved the strongest identity convergence, but with low repeatability and high computational cost</li></ul>
+<p>So the security question becomes more nuanced:</p>
+<p>Not &quot;can this system be attacked?&quot;</p>
+<p>But &quot;what level of compute, access, and optimisation is required to cross the authentication boundary?&quot;</p>
+<h2>Defensive controls</h2>
+<p>I also tested lightweight defensive controls that could be applied around the authentication system without retraining the embedding model.</p>
+<p>The secure wrapper included:</p>
+<ul><li>rate limiting</li><li>similarity logging</li><li>monotonic similarity increase detection</li><li>account lockout</li><li>a step-up authentication band</li></ul>
+<p>The value of these controls is that they target suspicious authentication behaviour rather than trying to make the embedding model perfect.</p>
+<p>This is important for small and medium-sized organisations, where retraining or replacing a biometric model may not be realistic.</p>
+<h2>What this means</h2>
+<p>The thesis conclusion was that authentication compromise depends on boundary crossing, not ordinary model misclassification.</p>
+<p>Pixel-space attacks can distort embeddings, but in my tests they rarely induced impersonation. Latent-space attacks were more dangerous because they could create identity-level convergence. Reduced-compute latent optimisation was especially important because it showed that meaningful attack feasibility may exist even under constrained resources.</p>
+<p>The defensive conclusion was also practical: operational controls can reduce attack feasibility without modifying the underlying model.</p>
+<p>This matters because biometric systems process sensitive identity data. Under GDPR, biometric data receives special protection. Under the EU AI Act, biometric and high-risk AI systems raise additional questions around risk management, robustness, and accountability.</p>
+<p>For me, the biggest lesson was that biometric AI security has to be evaluated as an authentication problem, not just a machine learning benchmark.</p>
+<h2>References</h2>
+<ul><li>European Parliament and Council (2016). <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj">Regulation (EU) 2016/679, General Data Protection Regulation</a>.</li><li>European Parliament and Council (2024). <a href="https://eur-lex.europa.eu/eli/reg/2024/1689/oj">Regulation (EU) 2024/1689, Artificial Intelligence Act</a>.</li><li>Goodfellow, I. J., Shlens, J. and Szegedy, C. (2015). <a href="https://arxiv.org/abs/1412.6572">Explaining and Harnessing Adversarial Examples</a>.</li><li>Kilany, S. and Mahfouz, A. (2025). <a href="https://pubmed.ncbi.nlm.nih.gov/40847113/">A comprehensive survey of deep face verification systems adversarial attacks and defense strategies</a>.</li><li>Madry, A., Makelov, A., Schmidt, L., Tsipras, D. and Vladu, A. (2018). <a href="https://openreview.net/forum?id=rJzIBfZAb">Towards Deep Learning Models Resistant to Adversarial Attacks</a>.</li><li>Schroff, F., Kalenichenko, D. and Philbin, J. (2015). <a href="https://openaccess.thecvf.com/content_cvpr_2015/html/Schroff_FaceNet_A_Unified_2015_CVPR_paper.html">FaceNet: A Unified Embedding for Face Recognition and Clustering</a>.</li><li>Yang, J., Liu, Z., Hu, Z., Yu, T. and Loy, C. C. (2020). Adversarial robustness of deep face recognition: A closer look. ECCV 2020.</li><li>Williams, S. (2025). <a href="https://github.com/stoodlesz/final-clean-msc-biometric-security">Adversarial Attacks on AI-Based Biometric Authentication Systems</a>.</li></ul>
+    </div>
+  </main>
+</body>
+</html>
