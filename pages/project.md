@@ -1,31 +1,31 @@
 ---
 title: "Project"
-summary: "The current research direction, values, and build plan."
+summary: "The research directions, values, and build plan behind this site."
 slug: project
 ---
 
 # Project
 
-The first project explores whether AI models can help identify and monitor stages of coastal dune succession from satellite imagery.
+This site is a public research notebook for learning how to build AI systems responsibly across two areas I care about: GeoAI and Medical AI.
 
-More broadly, this site is about learning how to build AI systems responsibly. I am especially interested in environmental AI and medical AI because both areas connect technical decisions to real human and ecological outcomes.
+Both areas connect technical decisions to real human and ecological outcomes. That makes them exciting, but also serious. The goal is not just to make models work, but to understand when they should be trusted, where they might fail, and how to design systems that are transparent, secure, and useful.
 
-The guiding principle is simple: use AI with care, ethics, and a moral compass. The goal is not just to make models work, but to understand when they should be trusted, where they might fail, and how to design systems that are transparent, secure, and useful.
+The guiding principle is simple: use AI with care, ethics, and a moral compass.
 
-## Current direction
+## GeoAI
 
-- collect and organise satellite imagery of dune systems
-- define visual indicators for vegetation cover and succession stage
-- test simple computer vision baselines
-- compare change over time across imagery
-- document dataset sources and assumptions
-- think about data integrity and model robustness from the start
-- connect technical experiments to ethical questions around trust, bias, and impact
+The GeoAI work starts with coastal dune ecosystems and psammosere succession. It explores whether AI models can identify stages of dune succession from satellite imagery, detect ecosystem change over time, and support restoration thinking.
+
+Read more on the [GeoAI page](geoai.html).
+
+## Medical AI
+
+The Medical AI work is about clinical imaging, decision support, prompt quality, context preservation, and reducing automation bias. I am interested in how AI can support clinical reasoning without replacing judgement or flattening important context.
+
+Read more on the [Medical AI page](medical-ai.html).
 
 ## Longer-term ideas
 
-The same approach could eventually be extended to wetlands, reforestation monitoring, and other ecosystem restoration contexts.
+Across both directions, I want to think about data quality, provenance, robustness, security, bias, and the consequences of model outputs from the start.
 
-The same mindset could also extend into medical AI: carefully evaluating what models can detect, how evidence is handled, and how to avoid treating predictions as neutral or automatically reliable.
-
-The aim is not just to build a model, but to understand what AI systems can reliably detect, where they fail, and how to make them more trustworthy.
+This is part technical project, part learning archive, and part attempt to build with responsibility rather than speed alone.

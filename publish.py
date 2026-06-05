@@ -73,6 +73,11 @@ def inline_markdown(text: str) -> str:
         r'<a href="\2">\1</a>',
         escaped,
     )
+    escaped = re.sub(
+        r"\[([^\]]+)\]\(([a-zA-Z0-9._/-]+\.html)\)",
+        r'<a href="\2">\1</a>',
+        escaped,
+    )
     return escaped
 
 
@@ -246,13 +251,14 @@ def articles_template(articles: list[dict[str, str]]) -> str:
 
 
 def index_template(articles: list[dict[str, str]]) -> str:
+    latest_articles = articles[:5]
     article_cards = "\n".join(
         f"""<article class="post">
       <p class="date">{html.escape(article["date"])}</p>
       <h2><a href="{html.escape(article["slug"])}.html">{html.escape(article["title"])}</a></h2>
       <p>{html.escape(article["summary"])}</p>
     </article>"""
-        for article in articles
+        for article in latest_articles
     )
 
     if not article_cards:
@@ -278,8 +284,14 @@ def index_template(articles: list[dict[str, str]]) -> str:
   </header>
   <main class="posts">
     <div class="section-title">
-      <p class="kicker">Latest notes</p>
-      <h2>Field notes, essays, and working drafts</h2>
+      <div>
+        <p class="kicker">Latest notes</p>
+        <h2>Field notes, essays, and working drafts</h2>
+      </div>
+      <div class="section-actions">
+        <a href="articles.html">See all</a>
+        <a href="project.html">Check out my projects</a>
+      </div>
     </div>
     {article_cards}
   </main>
@@ -420,7 +432,9 @@ a {
 }
 
 .section-title {
-  display: grid;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
   gap: 4px;
   padding: 6px 0 12px;
   border-bottom: 1px solid var(--line);
@@ -432,6 +446,24 @@ a {
   font-family: ui-serif, Georgia, "Times New Roman", serif;
   font-size: clamp(1.45rem, 4vw, 2.2rem);
   line-height: 1.15;
+}
+
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  justify-content: flex-end;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.section-actions a {
+  color: var(--moss);
+  text-decoration: none;
+}
+
+.section-actions a:hover {
+  text-decoration: underline;
 }
 
 .post {
@@ -515,6 +547,15 @@ a {
     background:
       linear-gradient(180deg, rgba(246, 235, 213, 0.92) 0%, rgba(246, 235, 213, 0.72) 42%, rgba(246, 235, 213, 0.18) 100%),
       url("assets/study.png") 62% center / cover no-repeat;
+  }
+
+  .section-title {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .section-actions {
+    justify-content: flex-start;
   }
 
   .hero-copy {
