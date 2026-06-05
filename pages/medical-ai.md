@@ -32,3 +32,5 @@ One aim of this work is to think about how AI tools could preserve useful contex
 Medical AI has to be built with a moral compass. A useful system should support better care, but it should also resist false certainty, avoid hiding bias, and make it easy for clinicians to question or override outputs.
 
 The goal is not automation for its own sake. The goal is careful assistance: systems that improve reasoning, reduce avoidable errors, and respect the responsibility of clinical judgement.
+
+=> [See all projects](project.html)
