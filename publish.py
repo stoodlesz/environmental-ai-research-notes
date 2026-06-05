@@ -573,6 +573,8 @@ def read_pages() -> list[dict[str, str]]:
 
 def sync_docs() -> None:
     DOCS_DIR.mkdir(exist_ok=True)
+    for path in DOCS_DIR.glob("*.html"):
+        path.unlink()
     for path in PUBLIC_DIR.glob("*.html"):
         shutil.copy2(path, DOCS_DIR / path.name)
     shutil.copy2(PUBLIC_DIR / "style.css", DOCS_DIR / "style.css")
@@ -583,6 +585,8 @@ def sync_docs() -> None:
 
 def build_site() -> None:
     PUBLIC_DIR.mkdir(exist_ok=True)
+    for path in PUBLIC_DIR.glob("*.html"):
+        path.unlink()
     articles = read_articles()
     for article in articles:
         body_html = markdown_to_html(remove_leading_title(article["body"]))
@@ -619,15 +623,15 @@ def publish_article(
     path = ARTICLES_DIR / f"{slug}.md"
     markdown = textwrap.dedent(
         f"""\
-        ---
-        title: "{title}"
-        date: {date}
-        summary: "{summary}"
-        slug: {slug}
-        ---
+---
+title: "{title}"
+date: {date}
+summary: "{summary}"
+slug: {slug}
+---
 
-        {body.strip()}
-        """
+{body.strip()}
+"""
     )
     path.write_text(markdown, encoding="utf-8")
     build_site()
@@ -658,14 +662,14 @@ Write this page here.
 """
     markdown = textwrap.dedent(
         f"""\
-        ---
-        title: "{title}"
-        summary: "{summary}"
-        slug: {slug}
-        ---
+---
+title: "{title}"
+summary: "{summary}"
+slug: {slug}
+---
 
-        {body.strip()}
-        """
+{body.strip()}
+"""
     )
     path.write_text(markdown, encoding="utf-8")
     build_site()
