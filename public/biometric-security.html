@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biometric Security | Research Notes</title>
+  <meta name="description" content="Adversarial attacks on AI-based biometric authentication systems, based on my MSc dissertation project.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Research Notes</a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="index.html">Home</a>
+      <a href="articles.html">Articles</a>
+      <a href="about.html">About</a>
+      <a href="project.html">Project</a>
+    </nav>
+  </header>
+  <main class="article">
+    <p class="kicker">Page</p>
+    <h1>Biometric Security</h1>
+    <p class="summary">Adversarial attacks on AI-based biometric authentication systems, based on my MSc dissertation project.</p>
+    <div class="article-body">
+      <p>This project is based on my MSc dissertation work: adversarial attacks on AI-based biometric authentication systems.</p>
+<p>The research investigates adversarial manipulation in facial biometric authentication systems that use embedding-based facial recognition. Instead of focusing only on classification error, the project looks at authentication-relevant outcomes: cosine similarity, threshold behaviour, false acceptance risk, and whether attacks could move an identity representation close enough to compromise a biometric system.</p>
+<p>The work connects AI security, adversarial machine learning, biometric authentication, and practical defensive thinking.</p>
+<h2>Project focus</h2>
+<ul><li>evaluate adversarial vulnerabilities in facial recognition systems</li><li>test pixel-space attacks such as FGSM and PGD</li><li>explore latent-space impersonation using StyleGAN2-ADA</li><li>analyse authentication thresholds using cosine similarity</li><li>focus on false acceptance and identity convergence rather than only classification error</li><li>evaluate lightweight mitigation strategies suitable for small and medium-sized organisations</li><li>work under constrained compute conditions, including CPU-only experimentation</li></ul>
+<h2>Why it matters</h2>
+<p>Biometric systems are often treated as secure because they are tied to identity, but AI-based biometric authentication can still be vulnerable to manipulation. A system can appear accurate in a normal benchmark while still behaving dangerously under adversarial pressure.</p>
+<p>This project is about asking security-focused questions: what would compromise look like, how close does an embedding need to get, what signals could detect suspicious behaviour, and how can defensive controls be made practical rather than theoretical.</p>
+<h2>Ethical focus</h2>
+<p>The attack work is framed as defensive research. The goal is to understand vulnerabilities so that biometric systems can be evaluated more realistically and protected more carefully.</p>
+<p>This also connects back to the wider theme of the site: AI systems should be tested not just for performance, but for robustness, misuse potential, explainability, and real-world risk.</p>
+<h2>Repository</h2>
+<p>The project repository is available here:</p>
+<p><a href="https://github.com/stoodlesz/final-clean-msc-biometric-security">stoodlesz/final-clean-msc-biometric-security</a></p>
+<p class="page-action"><a href="project.html">See all projects</a></p>
+    </div>
+  </main>
+</body>
+</html>

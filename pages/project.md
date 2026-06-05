@@ -6,9 +6,9 @@ slug: project
 
 # Project
 
-This site is a public research notebook for learning how to build AI systems responsibly across two areas I care about: GeoAI and Medical AI.
+This site is a public research notebook for learning how to build AI systems responsibly across a few areas I care about: GeoAI, Medical AI, and biometric security.
 
-Both areas connect technical decisions to real human and ecological outcomes. That makes them exciting, but also serious. The goal is not just to make models work, but to understand when they should be trusted, where they might fail, and how to design systems that are transparent, secure, and useful.
+These areas connect technical decisions to real human, ecological, and security outcomes. That makes them exciting, but also serious. The goal is not just to make models work, but to understand when they should be trusted, where they might fail, and how to design systems that are transparent, secure, and useful.
 
 The guiding principle is simple: use AI with care, ethics, and a moral compass.
 
@@ -24,8 +24,14 @@ The Medical AI work is about clinical imaging, decision support, prompt quality,
 
 Read more on the [Medical AI page](medical-ai.html).
 
+## Biometric Security
+
+This project comes from my MSc dissertation work on adversarial attacks against AI-based biometric authentication systems. It investigates how facial biometric systems can be manipulated, how authentication thresholds can be evaluated, and what lightweight defensive measures might look like under realistic compute constraints.
+
+Read more on the [Biometric Security page](biometric-security.html).
+
 ## Longer-term ideas
 
-Across both directions, I want to think about data quality, provenance, robustness, security, bias, and the consequences of model outputs from the start.
+Across these directions, I want to think about data quality, provenance, robustness, security, bias, and the consequences of model outputs from the start.
 
 This is part technical project, part learning archive, and part attempt to build with responsibility rather than speed alone.

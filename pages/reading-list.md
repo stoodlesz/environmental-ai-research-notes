@@ -6,7 +6,7 @@ slug: reading-list
 
 # Reading List
 
-This page will collect papers, datasets, tools, and references connected to environmental AI, medical AI, computer vision, secure machine learning, and responsible technology.
+This page will collect papers, datasets, tools, and references connected to environmental AI, medical AI, biometric security, computer vision, secure machine learning, and responsible technology.
 
 ## Starting areas
 
@@ -15,5 +15,6 @@ This page will collect papers, datasets, tools, and references connected to envi
 - computer vision for ecological monitoring
 - data provenance and dataset documentation
 - model robustness and secure machine learning
+- adversarial attacks on biometric authentication systems
 - ethical AI and responsible deployment
 - medical AI safety, validation, and bias
