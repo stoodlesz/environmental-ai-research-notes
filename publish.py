@@ -158,6 +158,12 @@ def remove_leading_title(markdown: str) -> str:
     return markdown
 
 
+def estimate_reading_time(markdown: str) -> str:
+    words = re.findall(r"\b[\w'-]+\b", markdown)
+    minutes = max(1, (len(words) + 224) // 225)
+    return f"{minutes} min read"
+
+
 def nav_html() -> str:
     links = "\n".join(
         f'      <a href="{href}">{html.escape(label)}</a>' for label, href in NAV_ITEMS
@@ -189,6 +195,7 @@ def article_nav_html(
 def article_template(
     title: str,
     date: str,
+    reading_time: str,
     summary: str,
     body_html: str,
     previous_article: dict[str, str] | None = None,
@@ -206,7 +213,7 @@ def article_template(
 <body>
   {nav_html()}
   <main class="article">
-    <p class="date">{html.escape(date)}</p>
+    <p class="date">{html.escape(date)} - {html.escape(reading_time)}</p>
     <h1>{html.escape(title)}</h1>
     <p class="summary">{html.escape(summary)}</p>
     <div class="article-body">
@@ -704,6 +711,7 @@ def build_site() -> None:
         output = article_template(
             article["title"],
             article["date"],
+            estimate_reading_time(article["body"]),
             article["summary"],
             body_html,
             previous_article,
