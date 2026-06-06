@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Building a first GeoAI pipeline for monitoring sand dune ecosystems | Research Notes</title>
+  <meta name="description" content="A detailed process note on starting my dune-ai-monitoring project: why sand dunes matter, how the repository was structured, and why provenance and secure ML belong in environmental AI.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Research Notes</a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="index.html">Home</a>
+      <a href="articles.html">Articles</a>
+      <a href="about.html">About</a>
+      <a href="project.html">Project</a>
+    </nav>
+  </header>
+  <main class="article">
+    <p class="date">2026-06-06</p>
+    <h1>Building a first GeoAI pipeline for monitoring sand dune ecosystems</h1>
+    <p class="summary">A detailed process note on starting my dune-ai-monitoring project: why sand dunes matter, how the repository was structured, and why provenance and secure ML belong in environmental AI.</p>
+    <div class="article-body">
+      <p>On 5 June 2026, I started turning a long-running interest into an actual research project.</p>
+<p>The project is called <a href="https://github.com/stoodlesz/dune-ai-monitoring">dune-ai-monitoring</a>, and the idea is to explore how machine learning, computer vision, and remote sensing could be used to analyse coastal sand dune ecosystems, especially psammoseres.</p>
+<p>This article is partly a project log and partly a research note. I want to document what I built first, why I built it in that order, and why I think sand dunes are a genuinely important subject for environmental AI.</p>
+<h2>Why sand dunes?</h2>
+<p>Sand dunes can look simple from a distance, but they are complex ecological systems.</p>
+<p>They are shaped by wind, vegetation, sediment movement, erosion, human pressure, and climate conditions. They also go through ecological succession. In a psammosere, pioneer plants begin stabilising mobile sand, which allows more complex plant communities to develop over time. That progression can include embryo dunes, yellow dunes, grey dunes, mature dune grassland, and eventually dune scrub or woodland.</p>
+<p>That ecological story is what first made dunes interesting to me.</p>
+<p>But dunes are not just interesting biologically. They matter practically. The European Climate, Infrastructure and Environment Executive Agency notes that sand dunes provide habitat for rare plants and wildlife, while also helping protect against erosion, flooding, and storm damage. The same article also points out that many dunes are being damaged, especially because so many people live near or use coastal areas.</p>
+<p>That makes dune monitoring a good environmental AI problem:</p>
+<ul><li>dunes are ecologically important</li><li>they change over time</li><li>they can be observed from above</li><li>they include visible patterns of sand, vegetation, water, and human disturbance</li><li>they need restoration and management decisions that should not be based on guesswork alone</li></ul>
+<p>If satellite imagery can help track vegetation recovery, dune degradation, or restoration progress, then AI could become useful as a supporting tool for conservation.</p>
+<p>But the word &quot;supporting&quot; matters. AI should support environmental monitoring, not replace ecological expertise.</p>
+<h2>The research idea</h2>
+<p>The long-term goal is to build models that can help detect dune ecosystem stages, identify degradation, and eventually support restoration planning from imagery.</p>
+<p>The first research goals in the repository are:</p>
+<ul><li>detect psammosere stages from aerial or satellite imagery</li><li>track ecological change across time</li><li>predict dune degradation or restoration</li><li>experiment with AI-assisted ecological restoration scenarios</li><li>build secure ML pipelines that are resistant to data poisoning or adversarial manipulation</li></ul>
+<p>That last point is important to me.</p>
+<p>I do not want this to be only an environmental computer vision project. I want it to also treat environmental AI as a security and trust problem. If environmental monitoring systems start influencing conservation policy, land management, or restoration funding, then the data pipeline has to be traceable and robust.</p>
+<p>It should be possible to ask:</p>
+<ul><li>where did this image come from?</li><li>when was it captured?</li><li>what sensor and bands were used?</li><li>how was it labelled?</li><li>how confident is the label?</li><li>has the file changed since it was registered?</li><li>could the model be misled by bad data, weak labels, or manipulated imagery?</li></ul>
+<p>That is why the first day of the project was not about training a model.</p>
+<p>It was about building the foundations.</p>
+<h2>Step 1: creating the repository structure</h2>
+<p>The first thing I set up was a project repository with a structure that could grow into a proper research codebase.</p>
+<p>The repository includes:</p>
+<ul><li><code>README.md</code> for the project overview</li><li><code>ROADMAP.md</code> for research phases</li><li><code>SECURITY.md</code> for secure ML considerations</li><li><code>pyproject.toml</code> and <code>requirements.txt</code> for package setup</li><li><code>data/</code> for raw, processed, and metadata files</li><li><code>docs/</code> for documentation</li><li><code>journal/</code> for project logs</li><li><code>notebooks/</code> for exploration</li><li><code>research/</code> for literature notes</li><li><code>src/dune_ai_monitoring/</code> for reusable code</li><li><code>tests/</code> for validation</li></ul>
+<p>This might seem like admin, but it matters.</p>
+<p>Research projects become hard to continue when everything is mixed together: notebooks, downloaded files, experimental scripts, notes, and outputs all in one folder. I wanted the project to be understandable when I came back to it later.</p>
+<p>The structure also helps separate the different kinds of work:</p>
+<ul><li>research notes are not the same as code</li><li>raw imagery is not the same as processed training data</li><li>metadata is not optional</li><li>tests should exist before the project becomes too large to reason about</li></ul>
+<p>This is the part of research that feels boring until it saves you.</p>
+<h2>Step 2: defining the roadmap</h2>
+<p>I then wrote a roadmap so the project had a clear direction.</p>
+<p>The roadmap breaks the work into five phases.</p>
+<p>The first phase is project foundations: identifying datasets, building preprocessing pipelines, and defining labels for dune succession stages.</p>
+<p>The second phase is psammosere classification. This is where the project would train models to classify stages such as embryo dunes, yellow dunes, grey dunes, mature dune grassland, and dune scrub or woodland.</p>
+<p>The third phase is temporal ecosystem change detection. This would use imagery across time to detect vegetation loss, dune erosion, or recovery.</p>
+<p>The fourth phase is predictive environmental modelling. This is the more speculative part: could models help simulate restoration scenarios, vegetation spread, or dune stabilisation?</p>
+<p>The fifth phase is environmental AI security. This is where the project asks whether environmental ML systems can be manipulated through adversarial imagery, synthetic imagery, or dataset poisoning.</p>
+<p>Writing the roadmap helped me keep the project from becoming a vague &quot;AI for dunes&quot; idea.</p>
+<p>It became a staged research pipeline.</p>
+<h2>Step 3: starting with provenance, not modelling</h2>
+<p>The most important early design choice was to build a dataset manifest before building the model.</p>
+<p>The dataset manifest is a CSV-based record of each image. It tracks where an image came from, how it is labelled, and whether its bytes can be verified later.</p>
+<p>The manifest includes fields such as:</p>
+<ul><li>image path</li><li>source name</li><li>source URL</li><li>capture date</li><li>location name</li><li>latitude and longitude</li><li>sensor</li><li>bands</li><li>psammosere stage</li><li>label source</li><li>label confidence</li><li>SHA-256 hash</li><li>licence</li><li>notes</li></ul>
+<p>This connects the environmental research side of the project to the cybersecurity side.</p>
+<p>For example, the <code>sha256</code> field means a downloaded image can be checked later to see whether it has changed. The <code>source_url</code> field keeps the dataset traceable. The <code>label_source</code> and <code>label_confidence</code> fields make it possible to distinguish between a high-confidence field-survey label and a weaker label produced through manual review or derived from land cover.</p>
+<p>This matters because environmental AI models are only as trustworthy as their data.</p>
+<p>If I eventually train a classifier to identify dune succession stages, I need to know what imagery was used, where it came from, and how the labels were produced. Without that, the model might look scientific while being impossible to audit.</p>
+<h2>Step 4: building the first reusable code</h2>
+<p>The first reusable code modules live under <code>src/dune_ai_monitoring/</code>.</p>
+<p>The early package includes:</p>
+<ul><li>dataset manifest helpers</li><li>CSV loading and writing</li><li>manifest validation</li><li>SHA-256 hashing</li><li>image tiling helpers</li><li>NDVI and NDWI calculations</li><li>psammosere stage label validation</li></ul>
+<p>The preprocessing pieces are important because raw satellite imagery is not automatically model-ready.</p>
+<p>Images may need to be tiled into smaller patches. Spectral indices such as NDVI can help estimate vegetation patterns. Labels need to be consistent. Metadata needs to travel with the imagery.</p>
+<p>At this stage, the project is still foundational. It does not yet train a model. But it creates the basic tools that will make model training less chaotic later.</p>
+<h2>Step 5: adding a command-line tool for image registration</h2>
+<p>The next useful step was creating <code>dune-manifest-add</code>.</p>
+<p>This command registers a local image in the manifest. It records the metadata, computes the file&#x27;s SHA-256 hash, and writes the row into a manifest CSV.</p>
+<p>That means an image can be added to the dataset in a repeatable way, rather than manually copying details into a spreadsheet and hoping nothing gets missed.</p>
+<p>In practical terms, this command helps answer:</p>
+<ul><li>what is this image?</li><li>where did it come from?</li><li>what location does it represent?</li><li>what label does it currently have?</li><li>how confident is that label?</li><li>can I verify the file later?</li></ul>
+<p>This is the kind of thing I want to build into the project from the beginning, because retrofitting provenance later is painful.</p>
+<h2>Step 6: connecting to real satellite imagery</h2>
+<p>After the manifest tooling, the next layer was <code>dune-pc-download</code>.</p>
+<p>This command searches Microsoft Planetary Computer&#x27;s STAC API for Sentinel-2 L2A imagery. It can select a low-cloud-cover item, download a chosen asset, compute its SHA-256 hash, register it in the manifest, and optionally write a readable report.</p>
+<p>This was the point where the project moved from &quot;how should imagery be stored?&quot; to &quot;how can I start bringing real satellite imagery into the pipeline?&quot;</p>
+<p>The command supports downloading a true-colour visual asset or individual spectral bands such as <code>B02</code>, <code>B03</code>, <code>B04</code>, or <code>B08</code>. Those individual bands will matter later for vegetation index work, including NDVI.</p>
+<h2>Step 7: first real site test with Dune du Pilat</h2>
+<p>The first real test used Dune du Pilat in France.</p>
+<p>The downloader selected a Sentinel-2 item from 2025-07-11 with very low cloud cover. A small rendered preview image was downloaded locally for inspection. The image itself was kept out of Git, but the metadata record and readable report were added under <code>data/metadata/</code>.</p>
+<p>The report included:</p>
+<ul><li>source item ID</li><li>capture date</li><li>cloud cover</li><li>SHA-256 hash</li><li>bounding box</li><li>approximate search-box area</li><li>a note that the search-box area is not yet a measured sand-dune area</li></ul>
+<p>That last point is important.</p>
+<p>At this stage, the project can record the approximate area of the search box, but it cannot yet measure the actual area of sand dunes. That will require later image analysis to separate sand, vegetation, water, and built-up pixels.</p>
+<p>This is the kind of distinction I want the project to keep making: what the data says, what it does not say yet, and what work is still needed before a claim becomes meaningful.</p>
+<h2>Step 8: writing the security notes</h2>
+<p>The repository also includes a <code>SECURITY.md</code> file.</p>
+<p>This felt necessary because environmental AI is often discussed as if the main problem is model performance. But performance is only one part of trust.</p>
+<p>The security notes identify three broad risks:</p>
+<ul><li>adversarial imagery</li><li>dataset poisoning</li><li>model misuse</li></ul>
+<p>Adversarial imagery could include manipulated satellite imagery, synthetic aerial imagery, or perturbations designed to mislead a model.</p>
+<p>Dataset poisoning could involve incorrect ecosystem labels, corrupted datasets, or deliberately manipulated training examples.</p>
+<p>Model misuse could happen if a model is used outside its geographic training range, treated as ground truth, or relied on without field validation.</p>
+<p>The secure ML practices I want to build around this include:</p>
+<ul><li>reproducible datasets</li><li>transparent preprocessing pipelines</li><li>adversarial robustness testing</li><li>experiment tracking</li><li>dataset provenance documentation</li></ul>
+<p>This is where the project connects back to my broader interest in cybersecurity and responsible AI.</p>
+<h2>Step 9: keeping a project journal</h2>
+<p>I also added a journal entry for 5 June 2026.</p>
+<p>The point of the journal is to record the process while the project is still fresh. It captures what changed, what the codebase can do, what it cannot do yet, and what the next useful step might be.</p>
+<p>The first journal entry records that the project can now:</p>
+<ul><li>search for Sentinel-2 imagery</li><li>download a preview asset</li><li>register the downloaded file in a provenance-aware manifest</li><li>compute a SHA-256 hash</li><li>generate a human-readable image report</li><li>keep source imagery out of Git while preserving metadata</li></ul>
+<p>It also records what the project cannot do yet:</p>
+<ul><li>it does not yet train a model</li><li>it does not yet calculate the actual area of sand dunes</li><li>it does not yet separate sand, vegetation, water, and urban pixels</li></ul>
+<p>That honesty is useful.</p>
+<p>It stops the project from becoming overclaimed too early.</p>
+<h2>Why tracking dunes matters</h2>
+<p>The importance of sand dunes is not only local or aesthetic.</p>
+<p>Coastal dunes can act as natural protective systems. They absorb and buffer some of the pressure from erosion, flooding, and storm damage. They also support rare plants, wildlife, and specialised habitats.</p>
+<p>European restoration work already treats dunes as important ecological infrastructure. CINEA describes LIFE projects restoring dunes through grazing, invasive species removal, wet dune slack restoration, bare sand creation, and habitat management. Climate-ADAPT also frames dune construction and strengthening as a nature-based adaptation option for coastal resilience.</p>
+<p>That makes monitoring important.</p>
+<p>If dunes are restored, managers need to know whether vegetation is recovering. If dunes are degrading, they need to detect where and when change is happening. If invasive species are spreading, or bare sand is disappearing, or vegetation patterns are shifting, then remote sensing may help create a broader picture than field visits alone.</p>
+<p>The challenge is that satellite imagery does not interpret itself.</p>
+<p>That is where AI might help, but only if the pipeline is careful.</p>
+<h2>What comes next</h2>
+<p>The next practical step is to build preprocessing outputs from recorded source imagery.</p>
+<p>That means taking a registered image and beginning to separate meaningful land-cover patterns:</p>
+<ul><li>sand</li><li>vegetation</li><li>water</li><li>built-up or urban pixels</li></ul>
+<p>From there, the project can begin exploring psammosere classification categories and testing simple baselines.</p>
+<p>The longer-term path is:</p>
+<ul><li>collect labelled dune imagery datasets</li><li>train a psammosere stage classifier</li><li>analyse satellite and aerial imagery</li><li>detect ecosystem change across time</li><li>evaluate adversarial robustness of environmental ML models</li><li>explore whether the same approach could support wetlands, reforestation, floodplain ecosystems, or broader habitat restoration</li></ul>
+<p>The project is still early.</p>
+<p>But it now has a foundation: a repository, a roadmap, a security framing, a dataset manifest, first preprocessing utilities, a satellite imagery downloader, and a journal of what has been done.</p>
+<p>That feels like the right first step.</p>
+<h2>References</h2>
+<ul><li>CINEA (2021). <a href="https://cinea.ec.europa.eu/news-events/news/strengthening-europes-sand-dunes-2021-06-23_en">Strengthening Europe&#x27;s sand dunes</a>.</li><li>Climate-ADAPT (2023). <a href="https://climate-adapt.eea.europa.eu/en/metadata/adaptation-options/dune-construction-and-strengthening">Dune construction and strengthening</a>.</li><li>Williams, S. (2026). <a href="https://github.com/stoodlesz/dune-ai-monitoring">Dune AI Monitoring repository</a>.</li><li>Williams, S. (2026). <a href="https://github.com/stoodlesz/dune-ai-monitoring/blob/main/ROADMAP.md">Dune AI Monitoring roadmap</a>.</li><li>Williams, S. (2026). <a href="https://github.com/stoodlesz/dune-ai-monitoring/blob/main/SECURITY.md">Dune AI Monitoring security considerations</a>.</li><li>Williams, S. (2026). <a href="https://github.com/stoodlesz/dune-ai-monitoring/blob/main/docs/dataset_manifest.md">Dataset manifest documentation</a>.</li><li>Williams, S. (2026). <a href="https://github.com/stoodlesz/dune-ai-monitoring/blob/main/journal/2026-06-05.md">Project journal, 5 June 2026</a>.</li><li>Williams, S. (2026). <a href="https://github.com/stoodlesz/dune-ai-monitoring/blob/main/research/literature.md">Research literature notes</a>.</li></ul>
+    </div>
+    <nav class="article-links" aria-label="Article navigation">
+      <a href="articles.html">See all articles</a>
+<a href="thesis-results-biometric-security.html">See previous article</a>
+    </nav>
+  </main>
+</body>
+</html>
