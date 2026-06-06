@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TITAN and the promise of whole-slide pathology foundation models | Research Notes</title>
+  <meta name="description" content="A clear breakdown of TITAN, a multimodal whole-slide foundation model for pathology, and what it raises about provenance, auditability, governance, and interpretability.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">Research Notes</a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="index.html">Home</a>
+      <a href="articles.html">Articles</a>
+      <a href="about.html">About</a>
+      <a href="project.html">Project</a>
+    </nav>
+  </header>
+  <main class="article">
+    <p class="date">2026-06-06</p>
+    <h1>TITAN and the promise of whole-slide pathology foundation models</h1>
+    <p class="summary">A clear breakdown of TITAN, a multimodal whole-slide foundation model for pathology, and what it raises about provenance, auditability, governance, and interpretability.</p>
+    <div class="article-body">
+      <p>This is a working research note on Ding et al., &quot;A multimodal whole-slide foundation model for pathology&quot;, published in Nature Medicine in 2025.</p>
+<p>The paper introduces TITAN, a multimodal foundation model for computational pathology. Its central claim is that pathology AI should move beyond patch-level representations and toward slide-level models that can understand whole-slide images, align them with pathology language, retrieve similar cases, and generate report-like text.</p>
+<p>That sounds very big because it is very big.</p>
+<p>A whole-slide image is not like a normal photograph. It is a gigapixel object. It can contain tissue architecture, tumor regions, stroma, necrosis, inflammation, artifacts, empty background, scanner effects, staining differences, and clinically meaningful patterns at multiple scales. For years, much of computational pathology has worked by chopping slides into small patches, encoding those patches, and then using another model to pool or aggregate the information. TITAN tries to make the slide itself the object of representation.</p>
+<p>The clean version is:</p>
+<ul><li>TITAN is a Vision Transformer operating on grids of patch embeddings from whole-slide images.</li><li>It is pretrained on 335,645 whole-slide images from Mass General Brigham and GTEx.</li><li>It uses three stages: vision-only self-supervised learning, ROI-caption alignment using synthetic captions, and whole-slide/report alignment using pathology reports.</li><li>It performs strongly on slide-level classification, molecular prediction, survival prediction, few-shot learning, zero-shot classification, rare cancer retrieval, cross-modal retrieval, and report generation.</li><li>Its most interesting clinical promise is not just prediction. It is retrieval and decision support: finding similar slides and reports for difficult cases.</li><li>Its most interesting weakness is trust infrastructure: provenance, audit logs, report lineage, black-box reduction, and governance around synthetic text and clinical deployment.</li></ul>
+<p>This note is therefore both a paper summary and an argument about what should sit around models like TITAN. The technical question is: can we build methods around whole-slide foundation models that make them more auditable, more clinically accountable, and less opaque?</p>
+<h2>Why this paper exists</h2>
+<p>The introduction starts from a problem in computational pathology: patch-level foundation models have become powerful, but clinical questions are often slide-level or patient-level.</p>
+<p>A patch encoder can learn useful histology features from millions of small regions of tissue. It can represent cellular morphology, local architecture, and stain patterns. But a diagnosis or prognosis often depends on how those local regions relate to the whole specimen. A pathologist does not only look at one square crop. They move across the slide, compare regions, notice where tumor is dense, where stroma appears, where necrosis begins, and where tissue context changes the meaning of local morphology.</p>
+<p>The paper argues that current patch-based systems leave a gap between feature extraction and clinical use. The gap appears in several places.</p>
+<p>First, a whole-slide image is enormous. A model cannot simply treat it as a normal image.</p>
+<p>Second, patient cohorts are often small, especially for rare diseases. A supervised task-specific model may not have enough examples.</p>
+<p>Third, useful pathology data are not only visual. Reports contain diagnostic language, tissue site information, microscopic findings, and clinical context, although they are noisy and not always perfectly aligned to a single slide.</p>
+<p>Fourth, pathology AI needs more than classification. Clinicians may want to retrieve similar cases, compare reports, or ask whether a rare tumor resembles archived examples.</p>
+<p>TITAN is proposed as a general-purpose slide representation model that tries to handle all of this at once. It takes patch features, keeps their spatial arrangement, learns a slide embedding, and aligns that embedding with pathology text.</p>
+<p>The paper positions this as a move from &quot;patch foundation model plus downstream aggregator&quot; toward an off-the-shelf whole-slide foundation model.</p>
+<h2>The model in one sentence</h2>
+<p>TITAN is a transformer-based slide encoder that represents a whole-slide image as a spatial grid of patch embeddings and learns that representation through vision-only self-supervision plus vision-language alignment with synthetic ROI captions and real pathology reports.</p>
+<p>That sentence hides several important design choices.</p>
+<p>The model does not ingest raw gigapixel pixels directly. Instead, the authors divide each slide into 512 x 512 pixel patches at 20x magnification. Each patch is passed through CONCHv1.5, a pathology patch encoder. TITAN then works in the embedding space of those patch features. In other words, CONCHv1.5 acts like the patch embedding layer of a normal Vision Transformer.</p>
+<p>The slide is represented as a two-dimensional feature grid. This matters because pathology is spatial. If the model treated patches as an unordered bag, it could lose tissue architecture. By keeping the grid, the model can use positional information and attention.</p>
+<p>The difficult trick is that training on full slides would be computationally expensive. TITAN trains on 8,192 x 8,192 pixel regions, represented as 16 x 16 feature grids, then applies the model to larger slide contexts at inference. The authors use ALiBi positional bias, extended to two dimensions, to help the transformer generalize from shorter training contexts to longer slide-level contexts.</p>
+<p>The paper calls the vision-only model TITANV. After language alignment, the full multimodal model is called TITAN.</p>
+<h2>Section summary: Introduction</h2>
+<p>The introduction is doing three jobs.</p>
+<p>First, it explains why foundation models matter in pathology. Self-supervised patch encoders have already shown that pathology images contain reusable visual patterns. Once a model learns histological features, those features can be used for diagnosis, prognosis, biomarker prediction, and downstream clinical endpoints.</p>
+<p>Second, it argues that patch-level progress is not enough. Whole-slide images contain long-range context and patient-level meaning. Current approaches often require additional specialized models to aggregate patch embeddings, which makes clinical translation harder. The paper presents whole-slide foundation models as a way to simplify this: encode the whole slide once, then use the embedding for many tasks.</p>
+<p>Third, it identifies limitations in prior slide models. Some are vision-only and cannot use pathology reports. Some use fewer pretraining samples than patch foundation models. Some require end-to-end training or fine-tuning. Some are not evaluated deeply enough in clinically important low-data settings such as rare cancer retrieval.</p>
+<p>The authors&#x27; thesis is that a slide model should learn from both morphology and language, and should be evaluated on tasks that look closer to real pathology workflows: few-shot diagnosis, zero-shot language-guided classification, report generation, and retrieval of similar cases.</p>
+<p>The introduction immediately raises a governance question. If slide embeddings become a reusable clinical substrate, then the embedding itself becomes an object that needs provenance. We should know which slide generated it, which patch encoder produced the tokens, which model version created the embedding, what preprocessing occurred, and what clinical report text was used for alignment.</p>
+<h2>Section summary: Scaling SSL from patches to whole-slide images</h2>
+<p>The first Results section explains how TITAN is trained.</p>
+<p>The pretraining dataset, Mass-340K, contains 335,645 whole-slide images and 182,862 reports. It spans 20 organs, multiple stains, different tissue types, and several scanner types. The dataset is heavily neoplastic but includes normal, inflammatory, tissue damage response, and other categories. Most slides are H&amp;E, with smaller proportions of IHC and special stains.</p>
+<p>The training has three stages.</p>
+<p>Stage 1 is vision-only self-supervised learning. The model learns slide-level morphology from patch feature grids using iBOT, a self-supervised approach based on masked image modeling and student-teacher distillation. This stage creates TITANV.</p>
+<p>Stage 2 aligns image regions with generated text. The authors use PathChat to create 423,122 synthetic captions for 8,192 x 8,192 pixel regions. These captions describe morphology at a finer level than ordinary clinical reports usually do.</p>
+<p>Stage 3 aligns whole slides with pathology reports. The model is trained on 182,862 whole-slide/report pairs. This gives the slide embedding a connection to clinical language and enables zero-shot classification, report generation, and cross-modal retrieval.</p>
+<p>The technical heart of this section is how the model handles slide scale. Whole slides can contain more than 10,000 patch tokens. Training directly on that scale is expensive, so TITAN learns from sampled regions. Each 8k region becomes a 16 x 16 grid of patch features. From each region, the training process creates global and local crops for self-supervised learning.</p>
+<p>The positional encoding choice is important. The authors use a two-dimensional version of ALiBi, where attention is biased according to distance between patches in the grid. This helps the transformer preserve spatial context and makes it more plausible to train on smaller regions and infer on larger slides.</p>
+<p>This section is one of the strongest parts of the paper because it is a practical engineering answer to a real pathology problem. It does not pretend that gigapixel slides can be handled like ordinary images. It builds a representation pipeline around the constraints.</p>
+<p>My main concern is that several important transformations happen before the final embedding exists: tissue segmentation, tiling, patch encoding, feature augmentation, grid construction, region sampling, positional bias, and multimodal alignment. Each step is a potential source of error or bias. A clinical-grade system would need to log each step, not just the final model output.</p>
+<h2>Section summary: Diagnostic and slide-level capabilities</h2>
+<p>The next Results section evaluates whether TITAN&#x27;s slide embeddings are useful.</p>
+<p>The authors compare TITAN and TITANV against existing slide foundation models including PRISM, GigaPath, and CHIEF, as well as mean pooling and supervised baselines such as attention-based multiple instance learning.</p>
+<p>The evaluation covers many task types:</p>
+<ul><li>morphological classification</li><li>cancer subtyping</li><li>grading</li><li>molecular classification</li><li>immunohistochemistry-related prediction</li><li>survival prediction</li><li>noncancerous transplant rejection tasks</li></ul>
+<p>The paper also introduces two evaluation resources based on TCGA. TCGA-UniformTumor-8K is a region-level pan-cancer task with 25,495 tumor-containing 8k regions across 32 classes. TCGA-OncoTree is a whole-slide pan-cancer classification task with 11,186 slides across 46 OncoTree classes.</p>
+<p>The main result is that TITAN and TITANV generally outperform the other slide encoders. The paper reports especially strong performance on morphological subtyping, including difficult pan-cancer classification and noncancerous tasks. TITAN also performs well for molecular prediction and survival analysis, although mean pooling remains competitive for survival, suggesting that simple proportions of morphology may still carry strong prognostic information.</p>
+<p>A useful detail is the comparison between model size and performance. TITAN is smaller than some baseline slide encoders but performs strongly, which supports the claim that pretraining design and spatial context matter, not only parameter count.</p>
+<p>The paper also examines embedding structure. TITAN embeddings cluster by organ and tumor type while mixing submission sites more effectively, which the authors interpret as better biological organization and less site-driven clustering. They also show attention heatmaps where different attention heads focus on dense tumor, tumor-adjacent stroma, or non-tumor regions.</p>
+<p>The attention heatmaps are useful, but they are not a complete explanation. They tell us where attention may concentrate, not whether the model&#x27;s reasoning is clinically correct. This is a black-box reduction opportunity. An improved method could pair attention with concept-level evidence, retrieved neighbor cases, morphology summaries, stain/scanner metadata, and uncertainty traces.</p>
+<h2>Section summary: Different learning paradigms</h2>
+<p>This section asks whether pretrained slide embeddings are actually better than simpler or more supervised approaches.</p>
+<p>The comparison includes mean pooling, ABMIL, linear probing on frozen embeddings, and fine-tuning from either random or pretrained weights.</p>
+<p>The pattern is important:</p>
+<ul><li>ABMIL beats mean pooling, which makes sense because ABMIL learns task-specific attention.</li><li>TITAN linear probing beats ABMIL, suggesting that the pretrained slide embedding already captures useful morphology and context.</li><li>Fine-tuning TITAN can improve performance further when enough training data exist.</li><li>Fine-tuning from random initialization performs worse, which supports the value of pretraining.</li></ul>
+<p>This is a strong practical message. TITAN is not only a model for huge labs with large labeled cohorts. It is useful as a frozen representation, as a few-shot substrate, and as an initialization for fine-tuning.</p>
+<p>This suggests a possible governance layer around model use modes. A clinical AI system should record whether a prediction came from:</p>
+<ul><li>a frozen foundation embedding plus linear probe</li><li>a few-shot prototype classifier</li><li>a task-specific fine-tuned model</li><li>a retrieval workflow</li><li>a zero-shot text prompt workflow</li></ul>
+<p>Those modes have different risk profiles. A zero-shot prompt result should not be governed like a validated supervised classifier. Fine-tuned models should carry training cohort details. Retrieval systems should preserve the identities and metadata of returned comparison cases.</p>
+<h2>Section summary: Few-shot learning</h2>
+<p>The few-shot section is one of the most clinically interesting parts of the paper.</p>
+<p>Rare diseases are a recurring challenge in medical AI. If a cancer type has few examples, a conventional supervised model may not be viable. TITAN is evaluated with only a small number of labeled examples per class, including one-shot, two-shot, four-shot, eight-shot, and sixteen-shot settings.</p>
+<p>The reported pattern is that TITAN performs best across tasks and shot counts. TITANV is usually second best, which suggests that the vision-only representation already captures much of the needed morphology, while language alignment adds further value.</p>
+<p>The most striking claim is that TITAN can be much stronger than ABMIL in very low-data settings, especially on rare pan-cancer tasks. This makes sense if the foundation model has already learned broad morphological structure from pretraining. A small labeled set can then anchor the classes without training a large model from scratch.</p>
+<p>This is where the model connects most clearly to clinical reality. Rare cancers are exactly where expertise, examples, and diagnostic confidence may be scarce. A retrieval or few-shot system could help pathologists compare a difficult case to similar archived cases.</p>
+<p>But this also raises safety questions. Few-shot performance can be fragile. The choice of the few examples matters. A mislabeled support case could distort the prototype. A site-biased support set could make the model retrieve institution-specific artifacts rather than disease morphology.</p>
+<p>A useful extension would be support-set governance:</p>
+<ul><li>record who selected each support example</li><li>store the diagnostic basis for the label</li><li>track whether labels were confirmed by molecular testing, expert consensus, or report text</li><li>warn when support examples come from only one institution, scanner, or staining protocol</li><li>maintain audit logs when support sets are changed</li></ul>
+<p>That is not glamorous model architecture work, but it is exactly the kind of infrastructure that makes clinical AI safer.</p>
+<h2>Section summary: Language-aligned TITAN</h2>
+<p>This section evaluates what language alignment adds.</p>
+<p>TITAN is tested on zero-shot classification, where diagnostic labels are converted into text prompts and embedded by the text encoder. A slide is classified by finding the closest text embedding to the slide embedding.</p>
+<p>The paper compares TITAN with PRISM, another multimodal pathology model. TITAN performs much better in zero-shot classification across multiple tasks, especially multiclass tasks. The authors argue that the combination of fine-grained ROI captions and slide-level reports matters. ROI captions teach local morphology language. Reports teach diagnostic and slide-level language.</p>
+<p>This is conceptually elegant. Pathology language exists at different scales. A report may say &quot;invasive ductal carcinoma&quot; or &quot;glioblastoma, WHO grade IV&quot;, but a morphological description might mention necrosis, mitotic activity, gland formation, stromal reaction, or cellular atypia. TITAN uses synthetic captions to fill the gap between local visual features and high-level report diagnoses.</p>
+<p>The paper also evaluates report generation using TCGA-Slide-Reports, a dataset of 10,108 slide-report pairs. TITAN beats PRISM on METEOR, ROUGE, and BLEU. The examples suggest that TITAN can generate reports that capture tissue site, diagnosis, grade, and representative morphology better than PRISM in selected cases.</p>
+<p>This is exciting and dangerous at the same time.</p>
+<p>Report generation is not the same as diagnosis. A generated report can sound fluent while being wrong, incomplete, or overly confident. Metrics such as ROUGE and BLEU measure text overlap, not clinical safety. METEOR is somewhat richer but still not a substitute for expert validation.</p>
+<p>This is a rich area for improvement. A safer report-generation system might not generate a polished final report. It could instead generate structured draft observations with evidence links:</p>
+<ul><li>tissue site hypothesis</li><li>possible diagnosis</li><li>key morphology found</li><li>morphology not found</li><li>regions supporting each claim</li><li>nearest similar slides and their confirmed diagnoses</li><li>uncertainty and differential diagnoses</li><li>missing data or low-confidence areas</li><li>model version, prompt version, and preprocessing hash</li></ul>
+<p>That would shift the system from black-box text generation toward auditable clinical support.</p>
+<h2>Section summary: Rare cancer and cross-modal retrieval</h2>
+<p>The retrieval section may be the most persuasive clinical use case.</p>
+<p>Instead of asking the model to output a diagnosis directly, retrieval asks it to find similar slides or reports. This fits pathology practice more naturally. When facing a rare or difficult case, clinicians often benefit from comparison to previous cases, atlases, reports, and expert examples.</p>
+<p>The paper creates several rare cancer retrieval datasets. Rare-Cancer combines rare and common cancer types across TCGA, EBRAINS, and internal MGB data. Rare-Cancer-Public uses public data only. Rare-Cancer-External tests generalization on 39 slides from Kanagawa Cancer Center Hospital in Japan, covering rare ovarian and soft tissue cancers.</p>
+<p>The model retrieves candidate slides from a database and is evaluated by whether the top K results include the same diagnostic label as the query. TITAN performs best overall and is especially strong on the external rare cancer set, where domain shift matters.</p>
+<p>The paper also evaluates cross-modal retrieval on TCGA-Slide-Reports. This means two directions:</p>
+<ul><li>given a report, retrieve relevant slides</li><li>given a slide, retrieve relevant reports</li></ul>
+<p>TITAN outperforms PRISM in both directions.</p>
+<p>For clinical deployment, retrieval may be more defensible than autonomous generation. It can preserve human judgment: the model does not have to decide; it can surface comparison cases. But retrieval still needs governance. A retrieved case can mislead if its label is wrong, its report is outdated, its institution uses different terminology, or its tissue preparation differs substantially.</p>
+<p>An improved retrieval system should show provenance beside every retrieved case:</p>
+<ul><li>source institution or dataset</li><li>scan date and scanner</li><li>stain and tissue preparation</li><li>diagnosis label and label authority</li><li>report availability</li><li>known molecular or IHC confirmation</li><li>similarity score and embedding model version</li><li>reason codes or concept-level similarity, where possible</li><li>whether the case was part of pretraining</li></ul>
+<p>That last point matters. If a model retrieves cases it saw during pretraining or evaluation, clinicians and researchers should know. It changes how we interpret performance and trust.</p>
+<h2>Section summary: Discussion</h2>
+<p>The discussion presents TITAN as a general-purpose whole-slide foundation model with immediate potential for pathology workflows.</p>
+<p>The authors emphasize several contributions:</p>
+<ul><li>scaling successful patch-level self-supervised learning recipes to slide-level representation learning</li><li>using a Vision Transformer with two-dimensional ALiBi for long-context slide inference</li><li>combining vision-only pretraining with language alignment at both ROI and whole-slide scales</li><li>showing strong performance across classification, prognosis, few-shot, zero-shot, retrieval, and report-generation tasks</li><li>demonstrating that retrieval may help with rare cancers and diagnostically difficult cases</li></ul>
+<p>The limitations are important.</p>
+<p>First, training on 8k regions and extrapolating to full slides may still miss some whole-slide context. ALiBi helps, but it does not prove that every clinically relevant global pattern is captured.</p>
+<p>Second, slide models can encode nonbiological signals. Scanner type, staining protocol, tissue processing, and institution-specific artifacts can leak into embeddings. The paper does include robustness analyses around submission site clustering, but this remains a serious translational issue.</p>
+<p>Third, pathology report processing is difficult. Reports are noisy, often patient-level rather than slide-level, and may include details unrelated to morphology. Aligning slides to reports requires automated cleaning and mapping. This is a possible source of hidden label noise.</p>
+<p>Fourth, the pretraining dataset is large but still smaller than some patch-level pretraining datasets. The authors expect scaling data and architecture to improve performance.</p>
+<p>The discussion ends with an optimistic view: models like TITAN could become part of routine pathology toolkits, used alongside task-specific supervised systems.</p>
+<p>My reading is cautiously enthusiastic. TITAN is impressive, and the clinical direction makes sense. But the closer such systems get to clinical support, the more the missing infrastructure matters. A high-performing foundation model is not yet a clinical system. It needs data lineage, model lineage, uncertainty communication, human override, failure analysis, monitoring, and institutional governance.</p>
+<h2>Section summary: Methods</h2>
+<p>The Methods section gives the details needed to understand how much engineering sits underneath the headline results.</p>
+<p>The ethics statement says the internal retrospective data and reports were approved by the Mass General Brigham Institutional Review Board. Internal digital data were anonymized, and informed consent was waived because the work used archival pathology slides without direct patient recruitment.</p>
+<p>The pretraining dataset combines internal MGB slides, consult slides, and GTEx. It includes scanner and stainer diversity. The authors note 16 scanners from seven manufacturers, more than 100 IHC stains, and more than 50 special stains.</p>
+<p>For synthetic caption generation, PathChat creates detailed morphology descriptions for 8k ROIs. Because PathChat cannot directly process full 8k regions, each ROI is split into 64 smaller 1,024 x 1,024 patches. K-means clustering selects representative patches, and PathChat describes them. Qwen2-7B-Instruct rewrites captions to diversify language.</p>
+<p>For slide-report data, the authors process clinical reports to extract slide-specific descriptions and remove sensitive or irrelevant information. Qwen2-7B-Instruct is used locally for cleaning and rewriting. This is a major part of the pipeline because real pathology reports are not automatically machine-learning-ready.</p>
+<p>For visual preprocessing, the authors use CLAM for tissue segmentation and tiling. Slides are segmented using the saturation channel in HSV space, cleaned with median blurring and morphological operations, and tiled into 512 x 512 patches at 20x magnification. CONCHv1.5 extracts a 768-dimensional feature for each patch.</p>
+<p>For visual pretraining, TITANV uses iBOT on 16 x 16 feature grids. The model sees two global crops and ten local crops per sampled region. This is the slide-level analogue of self-supervised learning on image crops.</p>
+<p>For multimodal pretraining, the authors use CoCa. The architecture includes an image encoder, text encoder, and multimodal decoder. Stage 2 uses ROI-caption pairs with a large effective batch size. Stage 3 uses whole-slide/report pairs and crops slides to 64 x 64 feature grids, covering a much larger field of view.</p>
+<p>The slide encoder itself is compact: six transformer layers, 12 attention heads, embedding dimension 768, and hidden dimension 3,072. TITANV is trained on four A100 80GB GPUs, while multimodal TITAN uses eight A100 80GB GPUs. Downstream experiments are run on a single 24GB RTX 3090.</p>
+<p>The evaluation methods are broad. The paper uses linear probing, k-nearest neighbor probing, slide retrieval, cross-modal retrieval, few-shot classification, survival analysis, zero-shot classification, and report generation. Metrics include balanced accuracy, weighted F1, AUROC, quadratic-weighted Cohen&#x27;s kappa, concordance index, expected calibration error, entropy, Accuracy@K, majority-vote Accuracy@5, Recall@K, METEOR, ROUGE, and BLEU.</p>
+<p>The authors also use hierarchical generalized linear mixed-effects models for statistical comparisons across datasets.</p>
+<p>This Methods section is a reminder that &quot;foundation model&quot; does not mean simple model. It means a large socio-technical pipeline of image handling, metadata handling, text cleaning, model training, evaluation design, and statistical testing.</p>
+<h2>Questions the paper leaves open</h2>
+<p>The paper leaves four groups of questions.</p>
+<p>First, data and provenance:</p>
+<ul><li>Which slides were internal, consult, or public?</li><li>Which slides were part of pretraining versus evaluation?</li><li>How much scanner, stainer, and site metadata is retained in downstream use?</li><li>Can every embedding be traced back to a slide, preprocessing recipe, patch encoder, and TITAN version?</li></ul>
+<p>Second, report alignment:</p>
+<ul><li>How often do cleaned reports still contain slide-irrelevant information?</li><li>How often is a patient-level report incorrectly mapped to a slide?</li><li>How much does the model learn from diagnostic terminology rather than morphology?</li><li>Are generated captions ever wrong in ways that become amplified by pretraining?</li></ul>
+<p>Third, interpretability:</p>
+<ul><li>Are attention heatmaps stable across perturbations?</li><li>Can retrieved cases explain the model better than attention maps alone?</li><li>Can the model produce concept-level morphology evidence?</li><li>Can it say what evidence is missing?</li></ul>
+<p>Fourth, clinical governance:</p>
+<ul><li>Should report generation be used at all, or should the system produce structured evidence instead?</li><li>How should uncertainty be shown to pathologists?</li><li>What audit logs are required for a clinical retrieval session?</li><li>How should a hospital monitor model drift across scanners, stains, and departments?</li></ul>
+<h2>Research direction: an audit layer for whole-slide foundation models</h2>
+<p>The most natural next step is not to retrain TITAN from scratch. That would be expensive and probably unnecessary.</p>
+<p>A more realistic and useful direction would be an audit and provenance layer around whole-slide foundation model workflows.</p>
+<p>The aim would be to define and implement a lightweight framework for tracking how a whole-slide AI output was produced.</p>
+<p>At minimum, the system would record:</p>
+<ul><li>slide identifier</li><li>source dataset or institution</li><li>scanner and stain metadata</li><li>tissue segmentation settings</li><li>tile size and magnification</li><li>patch encoder name and version</li><li>slide encoder name and version</li><li>preprocessing code version</li><li>embedding hash</li><li>prompt template, if using zero-shot classification</li><li>support set identity, if using few-shot learning</li><li>retrieval database version, if using slide search</li><li>generated text model and decoding settings, if using report generation</li><li>user identity and timestamp for each model query</li><li>returned outputs and uncertainty values</li></ul>
+<p>This would let a user reconstruct why an output existed. It would also help answer whether a changed output came from a model update, preprocessing change, prompt change, retrieval database change, or support-set change.</p>
+<p>That is the kind of infrastructure medical AI needs before it becomes trustworthy at scale.</p>
+<h2>Research direction: provenance-aware retrieval</h2>
+<p>Retrieval is clinically promising, so a focused method could build a prototype retrieval interface that does not only show &quot;similar cases&quot;.</p>
+<p>It would show similar cases with provenance cards.</p>
+<p>Each card could include:</p>
+<ul><li>diagnosis and diagnostic authority</li><li>tissue site</li><li>stain</li><li>scanner</li><li>institution or dataset</li><li>report excerpt or structured diagnosis</li><li>similarity score</li><li>whether the case was used in model pretraining</li><li>whether molecular confirmation exists</li><li>model explanation signals</li></ul>
+<p>The research question would be whether provenance-aware retrieval changes trust calibration. Do users become less likely to overtrust retrieved cases when scanner, site, and label provenance are visible? Do they notice when all similar cases come from one institution? Do they use uncertainty more appropriately?</p>
+<p>This could become a human factors and governance study rather than only a machine learning benchmark.</p>
+<h2>Research direction: black-box reduction through evidence bundles</h2>
+<p>TITAN includes attention heatmaps, but attention alone is not enough.</p>
+<p>An evidence bundle could combine:</p>
+<ul><li>top attended regions</li><li>nearest retrieved slides</li><li>nearest retrieved reports</li><li>morphology concepts extracted from generated captions</li><li>uncertainty and calibration metrics</li><li>data provenance</li><li>prompt or support-set details</li></ul>
+<p>Instead of saying &quot;the model predicts X&quot;, the system would say:</p>
+<p>&quot;The model places this slide near these confirmed examples, attends to these regions, associates them with these morphology concepts, and has this level of uncertainty. The result was produced by this model version on this date using this preprocessing pipeline.&quot;</p>
+<p>That would not make the model fully interpretable, but it would make the output less opaque and more contestable.</p>
+<p>Contestability is a good word for medical AI. A clinician should be able to challenge the output, inspect its basis, and decide whether it deserves weight.</p>
+<h2>Research direction: synthetic caption governance</h2>
+<p>TITAN&#x27;s use of synthetic captions is clever. It gives the model fine-grained morphology language at a scale that would be hard to obtain manually.</p>
+<p>But synthetic captions introduce a new lineage problem. If a generative model creates the training text, then the generated text should itself be treated as data with provenance.</p>
+<p>A synthetic caption governance framework could record:</p>
+<ul><li>source ROI</li><li>ROI sampling method</li><li>captioning model</li><li>prompt</li><li>generation settings</li><li>rewrite model</li><li>rewrite prompt</li><li>quality-control status</li><li>reviewer notes, if any</li><li>whether the caption was used for training</li></ul>
+<p>It could also flag risks:</p>
+<ul><li>hallucinated morphology</li><li>overly generic descriptions</li><li>missing negations</li><li>diagnostic leakage</li><li>inconsistent terminology</li><li>captions that overfit to common tumor patterns</li></ul>
+<p>The broader research question is whether synthetic clinical language improves representation learning while also creating hidden bias. That is exactly the kind of question I would like to explore.</p>
+<h2>Research direction: model cards for slide embeddings</h2>
+<p>A whole-slide embedding should have a model card.</p>
+<p>Not only the model itself, but the embedding artifact.</p>
+<p>For example:</p>
+<ul><li>what slide produced this embedding?</li><li>what tissue regions were included or excluded?</li><li>what patches were background-masked?</li><li>what magnification and patch size were used?</li><li>what patch encoder generated the features?</li><li>what slide encoder generated the embedding?</li><li>what training data distribution shaped the encoder?</li><li>what known weaknesses apply?</li><li>what clinical tasks is the embedding validated for?</li><li>what tasks should it not be used for?</li></ul>
+<p>This could be implemented as a simple JSON schema first. Later it could connect to W3C PROV, model cards, datasheets for datasets, or healthcare audit standards.</p>
+<h2>What I think the paper does very well</h2>
+<p>The paper is strong because it joins several ideas that belong together.</p>
+<p>It treats whole-slide pathology as a multiscale problem. It does not reduce the slide to isolated patches or pretend that one magnification level is enough.</p>
+<p>It uses language in a pathology-specific way. Reports and morphology captions are not just extra metadata; they are part of the representation learning strategy.</p>
+<p>It evaluates low-data and rare disease settings. This is important because many medical AI papers look best where data are abundant, while clinical need is often sharpest where data are scarce.</p>
+<p>It makes retrieval central. Retrieval feels more clinically grounded than standalone classification because it supports comparison, second opinion, and human reasoning.</p>
+<p>It includes a serious range of baselines and tasks. The paper is not just one benchmark with one headline metric.</p>
+<h2>What I would be careful about</h2>
+<p>I would be careful about clinical overclaiming. Strong benchmark performance does not mean the model is ready to write reports in a live diagnostic workflow.</p>
+<p>I would be careful about text generation. A generated report can look reassuring even when it contains an error. In clinical settings, fluency is a risk factor as well as a feature.</p>
+<p>I would be careful about synthetic captions. They may improve alignment, but they also import the assumptions and mistakes of the captioning model.</p>
+<p>I would be careful about hidden site effects. The paper addresses this, but scanner, stain, institution, and tissue processing artifacts remain a central problem in computational pathology.</p>
+<p>I would be careful about data access and reproducibility. Some data are internal and can only be shared under institutional conditions. That is understandable for privacy, but it affects independent replication.</p>
+<p>I would be careful about evaluation metrics for report generation. BLEU, ROUGE, and METEOR are useful but not enough for clinical meaning.</p>
+<h2>Where this leaves me</h2>
+<p>This paper sits where several important medical AI questions meet:</p>
+<ul><li>imaging models that do not hide uncertainty</li><li>clinical context that survives across workflow stages</li><li>foundation models that support, rather than replace, expert reasoning</li><li>provenance and auditability as first-class design goals</li><li>governance for high-risk AI systems</li><li>black-box reduction through evidence, retrieval, and traceability</li></ul>
+<p>The path I see is not &quot;build a better TITAN&quot; immediately. It is:</p>
+<ul><li>understand TITAN and related models deeply</li><li>reproduce a small retrieval or embedding workflow if feasible</li><li>design a provenance schema for slide AI outputs</li><li>prototype an audit log around model inference</li><li>build an evidence-bundle format for retrieved cases, attention regions, prompts, and uncertainty</li><li>evaluate whether this improves transparency and reduces overtrust</li></ul>
+<p>That is a research path with a real identity. It sits between machine learning, medical imaging, clinical workflow, and AI governance.</p>
+<h2>References</h2>
+<ul><li>Ding, T. et al. (2025). <a href="https://doi.org/10.1038/s41591-025-03982-3">A multimodal whole-slide foundation model for pathology</a>. Nature Medicine.</li><li>Mahmood Lab. <a href="https://github.com/mahmoodlab/TITAN">TITAN code and model loading repository</a>.</li><li>Chen, R. J. et al. (2024). <a href="https://www.nature.com/articles/s41591-024-02857-3">Towards a general-purpose foundation model for computational pathology</a>. Nature Medicine.</li><li>Xu, H. et al. (2024). <a href="https://www.nature.com/articles/s41586-024-07441-w">A whole-slide foundation model for digital pathology from real-world data</a>. Nature.</li></ul>
+    </div>
+    <nav class="article-links" aria-label="Article navigation">
+      <a href="articles.html">See all articles</a>
+<a href="thesis-results-biometric-security.html">See previous article</a>
+<a href="building-dune-ai-monitoring.html">See next article</a>
+    </nav>
+  </main>
+</body>
+</html>
